@@ -6,4 +6,6 @@ build
 .expo
 .vercel
 npm-debug.log*
-tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+.vercel
