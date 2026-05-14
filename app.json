@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "KitRadar",
+    "slug": "kitradar",
+    "scheme": "kitradar",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": ["**/*"],
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#050608" } },
+    "web": { "bundler": "metro" }
+  }
+}
