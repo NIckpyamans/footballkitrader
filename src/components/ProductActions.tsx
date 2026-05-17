@@ -7,17 +7,19 @@ export function ProductActions({ productId, productTitle }: { productId: string;
   const [favoriteSaved, setFavoriteSaved] = useState(false);
   const [alertSaved, setAlertSaved] = useState(false);
 
-  function saveFavorite() {
+  async function saveFavorite() {
     const stored = JSON.parse(localStorage.getItem("footballkitradar_favorites") ?? "[]") as string[];
     const next = Array.from(new Set([...stored, productId]));
     localStorage.setItem("footballkitradar_favorites", JSON.stringify(next));
+    await fetch("/api/favorites", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId }) }).catch(() => null);
     setFavoriteSaved(true);
   }
 
-  function saveAlert() {
+  async function saveAlert() {
     const stored = JSON.parse(localStorage.getItem("footballkitradar_alerts") ?? "[]") as Array<{ productId: string; title: string }>;
     const next = [...stored.filter((item) => item.productId !== productId), { productId, title: productTitle }];
     localStorage.setItem("footballkitradar_alerts", JSON.stringify(next));
+    await fetch("/api/alerts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, targetPrice: 25 }) }).catch(() => null);
     setAlertSaved(true);
   }
 
@@ -35,7 +37,7 @@ export function ProductActions({ productId, productTitle }: { productId: string;
       </div>
       {(favoriteSaved || alertSaved) ? (
         <p className="rounded-2xl border border-volt/20 bg-volt/10 px-4 py-3 text-sm text-volt">
-          Saved locally. Sign in later to sync this across devices with Supabase Auth.
+          Saved. This is ready to sync with Supabase Auth when the user is signed in.
         </p>
       ) : null}
     </div>

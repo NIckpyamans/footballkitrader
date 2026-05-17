@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BrainCircuit, SlidersHorizontal, Sparkles } from "lucide-react";
+import { BrainCircuit, SearchCheck, SlidersHorizontal, Sparkles } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { SearchPanel } from "@/components/SearchPanel";
 import { Shell } from "@/components/Shell";
@@ -68,10 +68,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           </label>
           <button className="flex items-center justify-center gap-2 rounded-2xl bg-volt px-4 py-3 text-sm font-bold text-ink"><SlidersHorizontal size={16} /> Filter</button>
         </form>
-        <div className="mt-5 flex flex-wrap gap-2">
-          {["WK26 Netherlands", "Brazil fan version", "Messi retro", "player version WK", "training suit", "mystery shirts"].map((suggestion) => <a key={suggestion} href={`/search?q=${encodeURIComponent(suggestion)}`} className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-steel hover:text-white"><Sparkles size={14} className="text-volt" /> {suggestion}</a>)}
+        <div className="glass mt-8 rounded-[28px] p-5">
+          <p className="flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-mint"><SearchCheck size={16} /> {results.length} resultaten{params.q ? ` voor "${params.q}"` : ""}</p>
+          <p className="mt-2 text-sm text-steel">Alle kaarten hieronder zijn echte productresultaten binnen je huidige filters.</p>
         </div>
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
+        <div className="mt-5 grid gap-5 md:grid-cols-3">
           {results.map((product) => <ProductCard key={product.id} product={product} />)}
         </div>
         {results.length === 0 ? (
@@ -80,6 +81,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             <p className="mt-2 text-steel">Try a broader club, country, season or marketplace filter.</p>
           </div>
         ) : null}
+        <div className="mt-8">
+          <p className="text-sm uppercase tracking-[0.2em] text-steel">Populaire zoekopdrachten</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {["WK26 Netherlands", "Brazil fan version", "Messi retro", "player version WK", "training suit", "mystery shirts"].map((suggestion) => <a key={suggestion} href={`/search?q=${encodeURIComponent(suggestion)}`} className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-steel hover:text-white"><Sparkles size={14} className="text-volt" /> {suggestion}</a>)}
+          </div>
+        </div>
       </section>
     </Shell>
   );

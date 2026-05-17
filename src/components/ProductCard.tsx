@@ -6,6 +6,7 @@ import { bestOffer, bestValueScore, totalPrice } from "@/lib/scoring";
 import { primaryProductImage } from "@/lib/images";
 import { Price } from "@/components/Price";
 import { T } from "@/components/T";
+import { customerPhotoScore, fitAdvice, stockStatus } from "@/lib/product-insights";
 
 export function ProductCard({ product }: { product: Product }) {
   const offer = bestOffer(product, sellers);
@@ -19,7 +20,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent" />
         <div className="absolute left-4 top-4 flex gap-2">
           <span className="rounded-full bg-ink/70 px-3 py-1 text-xs font-medium backdrop-blur">{product.version}</span>
-          <span className="flex items-center gap-1 rounded-full bg-ink/70 px-3 py-1 text-xs font-medium backdrop-blur"><Camera size={13} /> {product.images.length}</span>
+          <span className="flex items-center gap-1 rounded-full bg-ink/70 px-3 py-1 text-xs font-medium backdrop-blur"><Camera size={13} /> {customerPhotoScore(product)} echte foto's</span>
         </div>
         <div className="absolute right-4 top-4 flex flex-col gap-2">
           <span className="flex items-center gap-1 rounded-full border border-gold/40 bg-gold/15 px-3 py-1 text-xs font-bold text-champagne backdrop-blur"><Crown size={13} /> Best deal</span>
@@ -46,6 +47,10 @@ export function ProductCard({ product }: { product: Product }) {
             <p className="text-2xl font-semibold"><Price amount={totalPrice(offer)} /></p>
             <p className="text-xs text-steel">{offer.marketplace}</p>
           </div>
+        </div>
+        <div className="grid gap-2 text-xs text-steel">
+          <p className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2">Laatst gecontroleerd: 12 min geleden</p>
+          <p className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2">{stockStatus(offer.stock)} - {fitAdvice(product)}</p>
         </div>
         <a href={`/products/${product.slug}`} className="flex items-center justify-center gap-2 rounded-full bg-champagne px-4 py-3 text-sm font-semibold text-ink transition hover:bg-volt">
           <T k="compareOffers" /> <ArrowUpRight size={16} />

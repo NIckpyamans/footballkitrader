@@ -8,9 +8,11 @@ import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { ProductCard } from "@/components/ProductCard";
 import { Price } from "@/components/Price";
 import { ProductActions } from "@/components/ProductActions";
+import { AIShirtAdvisor } from "@/components/AIShirtAdvisor";
 import { analyzeImageSignals, analyzePriceHistory, detectSellerWarnings, matchProducts } from "@/lib/ai-engine";
 import { primaryProductImage, safeProductImages } from "@/lib/images";
 import { bestOffer, bestValueScore, totalPrice } from "@/lib/scoring";
+import { bestSellerLabel, customerPhotoScore, photoChecklist, qualitySignals, reviewSnippets, sellerRiskInfo, stockStatus } from "@/lib/product-insights";
 
 export function generateStaticParams() {
   return products.map((product) => ({ slug: product.slug }));
@@ -44,8 +46,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
     return (bSeller?.trustScore ?? 0) - (aSeller?.trustScore ?? 0);
   })[0];
   const updatedAt = "12 minutes ago";
-  const qualitySignals = getQualitySignals(product);
-  const reviewSnippets = getReviewSnippets(product);
+  const productQualitySignals = qualitySignals(product);
+  const productReviewSnippets = reviewSnippets(product);
+  const productPhotoChecklist = photoChecklist(product);
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -67,11 +70,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="relative aspect-[4/5]"><Image src={primaryProductImage(product.images, product.slug)} alt={product.title} fill className="object-cover" priority /></div>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            {productImages.slice(0, 3).map((image) => (
-              <div key={image} className="relative aspect-square overflow-hidden rounded-3xl border border-white/10">
-                <Image src={image} alt={`${product.title} marketplace photo`} fill className="object-cover" />
+            {productPhotoChecklist.slice(0, 5).map((photo) => (
+              <div key={photo.label} className="relative aspect-square overflow-hidden rounded-3xl border border-white/10">
+                <Image src={photo.image} alt={`${product.title} ${photo.label}`} fill className="object-cover" />
+                <span className="absolute bottom-2 left-2 rounded-full bg-ink/80 px-2 py-1 text-[10px] text-white backdrop-blur">{photo.label}</span>
               </div>
             ))}
+          </div>
+          <div className="glass rounded-[28px] p-4">
+            <p className="flex items-center gap-2 text-sm font-bold text-mint"><Camera size={16} /> {customerPhotoScore(product)} echte koperfoto's gevonden</p>
+            <p className="mt-2 text-sm leading-6 text-steel">Feed-ready slots voor voorkant, achterkant, badge, kraag/label en materiaal. Gebruik alleen marketplace/API-foto's waarvoor je rechten of feed-toestemming hebt.</p>
           </div>
         </div>
         <div>
@@ -82,6 +90,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
           <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-6xl">{product.title}</h1>
           <p className="mt-4 text-lg leading-8 text-steel">{product.reviewSummary}</p>
+          <div className="sticky top-24 z-20 mt-5 rounded-[28px] border border-gold/30 bg-ink/90 p-4 shadow-glow backdrop-blur-2xl">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-gold">Beste deal nu</p>
+                <p className="text-2xl font-black text-volt"><Price amount={totalPrice(topOffer)} /></p>
+                <p className="text-sm text-steel">{topOffer.marketplace} - {topOffer.sellerName} - {topOffer.deliveryDays} dagen</p>
+              </div>
+              <Link href={`/api/track-click?offer=${topOffer.id}`} className="flex items-center justify-center gap-2 rounded-full bg-volt px-5 py-3 text-sm font-black text-ink">
+                Bekijk beste deal <ShoppingBag size={16} />
+              </Link>
+            </div>
+          </div>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Detail icon={<Star />} label="AI quality" value={`${product.qualityScore}/100`} />
             <Detail icon={<ShieldCheck />} label="Seller trust" value={`${product.aiTrustScore}/100`} />
@@ -109,14 +129,39 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           </div>
           <div className="mt-8 space-y-3">
+            <div className="overflow-hidden rounded-3xl border border-white/10">
+              <div className="grid grid-cols-6 bg-white/[0.06] px-4 py-3 text-xs uppercase tracking-[0.18em] text-steel">
+                <span className="col-span-2">Aanbieder</span><span>Totaalprijs</span><span>Levertijd</span><span>Trust</span><span>Actie</span>
+              </div>
+              {product.offers.map((offer) => {
+                const seller = sellers.find((item) => item.id === offer.sellerId);
+                const risk = sellerRiskInfo(offer, seller);
+                return (
+                  <div key={`table-${offer.id}`} className="grid grid-cols-6 items-center gap-2 border-t border-white/10 px-4 py-4 text-sm">
+                    <div className="col-span-2">
+                      <p className="font-bold">{offer.marketplace}</p>
+                      <p className="text-xs text-steel">{bestSellerLabel(product, offer, seller)} - {stockStatus(offer.stock)}</p>
+                    </div>
+                    <p className="font-black text-volt"><Price amount={totalPrice(offer)} /></p>
+                    <p>{offer.deliveryDays}d</p>
+                    <p>{seller?.trustScore ?? 75}%</p>
+                    <Link href={`/api/track-click?offer=${offer.id}`} className="rounded-full bg-white px-3 py-2 text-center text-xs font-bold text-ink">Deal</Link>
+                    <p className="col-span-6 text-xs text-steel">{risk.returns} - {risk.disputeRisk} - {risk.tracking}</p>
+                  </div>
+                );
+              })}
+            </div>
             {product.offers.map((offer) => {
               const seller = sellers.find((item) => item.id === offer.sellerId);
               const warnings = detectSellerWarnings(seller);
+              const risk = sellerRiskInfo(offer, seller);
               return (
                 <div key={offer.id} className="glass flex flex-col gap-4 rounded-3xl p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-lg font-semibold">{offer.marketplace} - {offer.sellerName}</p>
                     <p className="text-sm text-steel">Trust {seller?.trustScore ?? 75}% - {offer.reviewCount.toLocaleString()} reviews - {offer.deliveryDays} day estimate - stock {offer.stock}</p>
+                    <p className="mt-2 text-xs text-steel">{risk.returns} - {risk.disputeRisk} - {risk.tracking}</p>
+                    {risk.warning ? <p className="mt-2 flex items-center gap-2 text-xs text-red-200"><AlertTriangle size={14} /> {risk.warning}</p> : null}
                     {warnings.length > 0 ? <p className="mt-2 flex items-center gap-2 text-xs text-red-200"><AlertTriangle size={14} /> {warnings[0]}</p> : null}
                   </div>
                   <div className="flex items-center gap-4">
@@ -136,6 +181,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <p className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs leading-5 text-steel">
             Affiliate transparency: we may earn a commission when you buy through outbound links. Rankings still prioritize total price, seller trust, delivery and AI quality signals.
           </p>
+          <div className="mt-5"><AIShirtAdvisor product={product} /></div>
         </div>
       </section>
       <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-14 sm:px-6 lg:grid-cols-[1fr_.8fr]">
@@ -154,7 +200,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <Shirt className="text-volt" />
           <h2 className="mt-4 text-2xl font-bold">Quality breakdown</h2>
           <div className="mt-5 space-y-3">
-            {qualitySignals.map((signal) => (
+            {productQualitySignals.map((signal) => (
               <div key={signal.label}>
                 <div className="flex items-center justify-between text-sm"><span>{signal.label}</span><span className="font-bold text-champagne">{signal.score}/100</span></div>
                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-volt to-mint" style={{ width: `${signal.score}%` }} /></div>
@@ -167,7 +213,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <MessageSquareQuote className="text-volt" />
           <h2 className="mt-4 text-2xl font-bold">Review intelligence</h2>
           <div className="mt-5 space-y-3">
-            {reviewSnippets.map((snippet) => (
+            {productReviewSnippets.map((snippet) => (
               <blockquote key={snippet.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-mint">{snippet.label}</p>
                 <p className="mt-2 text-sm leading-6 text-steel">{snippet.text}</p>
@@ -227,23 +273,4 @@ function ChoiceCard({ icon, label, offer }: { icon: React.ReactNode; label: stri
       <p className="text-xs text-steel">{offer.deliveryDays} day estimate</p>
     </div>
   );
-}
-
-function getQualitySignals(product: { qualityScore: number; aiTrustScore: number; fakeReviewRisk: number; version: string }) {
-  const base = product.qualityScore;
-  return [
-    { label: "Badge quality", score: Math.min(99, base + (product.version === "Player" ? 2 : 0)) },
-    { label: "Print durability", score: Math.max(65, base - 4) },
-    { label: "Fabric feel", score: Math.max(65, base - (product.version === "Player" ? 1 : 5)) },
-    { label: "Wash confidence", score: Math.max(60, base - product.fakeReviewRisk) },
-    { label: "Seller reliability", score: product.aiTrustScore }
-  ];
-}
-
-function getReviewSnippets(product: { version: string; fakeReviewRisk: number; colors: string[] }) {
-  return [
-    { label: "Positive pattern", text: `Buyers repeatedly mention strong ${product.colors[0]?.toLowerCase() ?? "color"} accuracy, clean seams and good value for the price.` },
-    { label: "Watch out", text: product.version === "Player" ? "Player version fit is slim. Most shoppers should check chest width carefully or size up." : "Fan version fabric is more relaxed, but badge and collar photos should still be checked before buying." },
-    { label: "Fake-review risk", text: `${product.fakeReviewRisk}% estimated risk. Prefer listings with daylight customer photos, specific sizing comments and recent delivery reviews.` }
-  ];
 }
