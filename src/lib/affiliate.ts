@@ -32,8 +32,8 @@ export async function searchMarketplaceOffers(filters: SearchFilters) {
 
 export function buildAffiliateUrl(rawUrl: string, clickId: string) {
   const url = new URL(rawUrl);
-  url.searchParams.set("kitradar_click_id", clickId);
-  url.searchParams.set("utm_source", "kitradar");
+  url.searchParams.set("footballkitradar_click_id", clickId);
+  url.searchParams.set("utm_source", "footballkitradar");
   url.searchParams.set("utm_medium", "affiliate");
   return url.toString();
 }

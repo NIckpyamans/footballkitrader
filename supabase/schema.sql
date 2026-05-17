@@ -106,7 +106,65 @@ create table public.price_history (
   offer_id uuid references public.offers(id) on delete cascade,
   price numeric(10,2) not null,
   shipping_price numeric(10,2) default 0,
+  currency text default 'EUR',
+  source_snapshot jsonb default '{}'::jsonb,
   captured_at timestamptz default now()
+);
+
+create table public.club_data (
+  id uuid primary key default uuid_generate_v4(),
+  name text not null unique,
+  country text,
+  league text,
+  primary_colors text[] default '{}',
+  aliases text[] default '{}',
+  popularity_score int default 50 check (popularity_score between 0 and 100),
+  created_at timestamptz default now()
+);
+
+create table public.seasonal_products (
+  id uuid primary key default uuid_generate_v4(),
+  product_id uuid references public.products(id) on delete cascade,
+  season text not null,
+  campaign text default 'club-season',
+  demand_score int default 50 check (demand_score between 0 and 100),
+  launch_window daterange,
+  created_at timestamptz default now()
+);
+
+create table public.marketplace_trust_history (
+  id uuid primary key default uuid_generate_v4(),
+  marketplace_id uuid references public.marketplaces(id) on delete cascade,
+  ai_trust_score int check (ai_trust_score between 0 and 100),
+  scam_risk int check (scam_risk between 0 and 100),
+  quality_score int check (quality_score between 0 and 100),
+  shipping_score int check (shipping_score between 0 and 100),
+  signals jsonb default '{}'::jsonb,
+  captured_at timestamptz default now()
+);
+
+create table public.ai_scoring_events (
+  id uuid primary key default uuid_generate_v4(),
+  entity_type text not null check (entity_type in ('product', 'seller', 'marketplace', 'offer', 'review')),
+  entity_id text not null,
+  model_name text,
+  score_type text not null,
+  score int check (score between 0 and 100),
+  explanation text,
+  feature_snapshot jsonb default '{}'::jsonb,
+  created_at timestamptz default now()
+);
+
+create table public.seo_content_pages (
+  id uuid primary key default uuid_generate_v4(),
+  slug text not null unique,
+  locale text default 'en',
+  title text not null,
+  description text,
+  canonical_url text,
+  structured_data jsonb default '{}'::jsonb,
+  status text default 'draft' check (status in ('draft', 'published', 'archived')),
+  updated_at timestamptz default now()
 );
 
 create table public.favorites (
@@ -204,6 +262,11 @@ alter table public.products enable row level security;
 alter table public.offers enable row level security;
 alter table public.reviews enable row level security;
 alter table public.price_history enable row level security;
+alter table public.club_data enable row level security;
+alter table public.seasonal_products enable row level security;
+alter table public.marketplace_trust_history enable row level security;
+alter table public.ai_scoring_events enable row level security;
+alter table public.seo_content_pages enable row level security;
 alter table public.affiliate_clicks enable row level security;
 alter table public.product_matches enable row level security;
 alter table public.marketplace_discovery_runs enable row level security;
@@ -217,6 +280,11 @@ create policy "Public can read offers" on public.offers for select using (true);
 create policy "Public can read marketplaces" on public.marketplaces for select using (is_active = true);
 create policy "Public can read reviews" on public.reviews for select using (true);
 create policy "Public can read price history" on public.price_history for select using (true);
+create policy "Public can read club data" on public.club_data for select using (true);
+create policy "Public can read seasonal products" on public.seasonal_products for select using (true);
+create policy "Public can read marketplace trust history" on public.marketplace_trust_history for select using (true);
+create policy "Public can read AI scoring summaries" on public.ai_scoring_events for select using (true);
+create policy "Public can read published SEO pages" on public.seo_content_pages for select using (status = 'published');
 create policy "Public can read product matches" on public.product_matches for select using (true);
 create policy "Public can read discovery summaries" on public.marketplace_discovery_runs for select using (status in ('analysis_only', 'approved'));
 create policy "Public can read seller signals" on public.ai_seller_signals for select using (true);
@@ -230,3 +298,6 @@ create index products_search_idx on public.products using gin (to_tsvector('engl
 create index products_tags_idx on public.products using gin (tags);
 create index offers_product_idx on public.offers(product_id);
 create index affiliate_clicks_created_idx on public.affiliate_clicks(created_at desc);
+create index price_history_offer_captured_idx on public.price_history(offer_id, captured_at desc);
+create index ai_scoring_entity_idx on public.ai_scoring_events(entity_type, entity_id, created_at desc);
+create index seo_content_slug_idx on public.seo_content_pages(slug);

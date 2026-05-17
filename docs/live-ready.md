@@ -1,9 +1,9 @@
-# WK26 Live Readiness
+# FootballKitRadar WK26 Live Readiness
 
 ## GitHub and Vercel
 
 1. Push the repository to GitHub.
-2. In Vercel, import the repository and set the root directory to `KitRadar`.
+2. In Vercel, import the standalone `footballkitrader` repository.
 3. Enable automatic deployments for `main` and preview deployments for pull requests.
 4. Add all variables from `.env.example`.
 5. Keep the included GitHub Actions workflow enabled so every PR runs `typecheck` and `build`.
@@ -30,11 +30,11 @@ Important approval gates:
 
 ## Security
 
-- `src/middleware.ts` adds baseline security headers.
+- `src/proxy.ts` adds baseline security headers.
 - Search and click routes include a rate-limit scaffold.
 - Affiliate redirects are checked against an allowlist.
 - Admin mutations should require Supabase Auth with `role = admin` before going live.
 
 ## AI Marketplace Discovery
 
-The discovery engine is intentionally `analysis_only` by default. Candidate sources such as `ucljersey.com`, `2027jersey.com`, `vip-kiki004-shop.top` and `namejersey.com` are monitored as pending review sources with AI trust scores and scam-risk indicators. They must not be used for live redirects, scraping jobs, or affiliate activation without explicit approval.
+The discovery engine is intentionally `analysis_only` by default. Candidate sources such as `ucljersey.com`, `2027jersey.com`, `vip-kiki004-shop.top`, `namejersey.com` and `worldcupzone.shop` are monitored as pending review sources with AI trust scores and scam-risk indicators. They must not be used for live redirects, scraping jobs, or affiliate activation without explicit approval.

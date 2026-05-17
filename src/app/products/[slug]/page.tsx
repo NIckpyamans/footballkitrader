@@ -1,37 +1,46 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Bell, Camera, Crown, ExternalLink, Heart, Ruler, ShieldCheck, Sparkles, Star, Truck } from "lucide-react";
+import { AlertTriangle, Camera, Crown, ExternalLink, Ruler, ShieldCheck, ShoppingBag, Sparkles, Star, Truck } from "lucide-react";
 import { products, sellers } from "@/data/mock";
 import { Shell } from "@/components/Shell";
 import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { ProductCard } from "@/components/ProductCard";
 import { Price } from "@/components/Price";
-import { matchProducts } from "@/lib/ai-engine";
+import { ProductActions } from "@/components/ProductActions";
+import { analyzeImageSignals, analyzePriceHistory, detectSellerWarnings, matchProducts } from "@/lib/ai-engine";
+import { primaryProductImage, safeProductImages } from "@/lib/images";
 import { bestValueScore, totalPrice } from "@/lib/scoring";
 
 export function generateStaticParams() {
   return products.map((product) => ({ slug: product.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const product = products.find((item) => item.slug === params.slug);
+type ProductPageProps = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: ProductPageProps) {
+  const { slug } = await params;
+  const product = products.find((item) => item.slug === slug);
   return {
     title: product?.title ?? "Product",
     description: product?.reviewSummary
   };
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const product = products.find((item) => item.slug === params.slug);
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { slug } = await params;
+  const product = products.find((item) => item.slug === slug);
   if (!product) notFound();
+  const productImages = safeProductImages(product.images, product.slug);
   const related = matchProducts(product, products).slice(0, 3);
+  const priceIntel = analyzePriceHistory(product);
+  const imageIntel = analyzeImageSignals(product);
 
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.title,
-    image: product.images,
+    image: productImages,
     brand: product.club,
     description: product.reviewSummary,
     aggregateRating: { "@type": "AggregateRating", ratingValue: product.offers[0]?.rating ?? 4.5, reviewCount: product.offers.reduce((sum, offer) => sum + offer.reviewCount, 0) },
@@ -44,10 +53,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <section className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[.9fr_1.1fr]">
         <div className="space-y-4">
           <div className="glass overflow-hidden rounded-[34px]">
-            <div className="relative aspect-[4/5]"><Image src={product.images[0] || product.image} alt={product.title} fill className="object-cover" priority /></div>
+            <div className="relative aspect-[4/5]"><Image src={primaryProductImage(product.images, product.slug)} alt={product.title} fill className="object-cover" priority /></div>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            {product.images.slice(0, 3).map((image) => (
+            {productImages.slice(0, 3).map((image) => (
               <div key={image} className="relative aspect-square overflow-hidden rounded-3xl border border-white/10">
                 <Image src={image} alt={`${product.title} marketplace photo`} fill className="object-cover" />
               </div>
@@ -65,33 +74,39 @@ export default async function ProductPage({ params }: { params: { slug: string }
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Detail icon={<Star />} label="AI quality" value={`${product.qualityScore}/100`} />
             <Detail icon={<ShieldCheck />} label="Seller trust" value={`${product.aiTrustScore}/100`} />
-            <Detail icon={<Camera />} label="Real photos" value={`${product.images.length}`} />
+            <Detail icon={<Camera />} label="Image match" value={`${imageIntel.imageSimilarity}/100`} />
             <Detail icon={<Truck />} label="Fake risk" value={`${product.fakeReviewRisk}%`} />
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <IntelPill label="Price trend" value={`${priceIntel.dropPercent}% drop`} />
+            <IntelPill label="OCR confidence" value={`${imageIntel.ocrConfidence}/100`} />
+            <IntelPill label="Logo confidence" value={`${imageIntel.logoConfidence}/100`} />
           </div>
           <div className="mt-8 space-y-3">
             {product.offers.map((offer) => {
               const seller = sellers.find((item) => item.id === offer.sellerId);
+              const warnings = detectSellerWarnings(seller);
               return (
                 <div key={offer.id} className="glass flex flex-col gap-4 rounded-3xl p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-lg font-semibold">{offer.marketplace} · {offer.sellerName}</p>
                     <p className="text-sm text-steel">Trust {seller?.trustScore ?? 75}% · {offer.reviewCount.toLocaleString()} reviews · {offer.deliveryDays} day estimate · stock {offer.stock}</p>
+                    {warnings.length > 0 ? <p className="mt-2 flex items-center gap-2 text-xs text-red-200"><AlertTriangle size={14} /> {warnings[0]}</p> : null}
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-xs text-steel">AI deal score {Math.max(bestValueScore(product, offer, seller), product.aiDealScore)}</p>
                       <p className="text-2xl font-black text-volt"><Price amount={totalPrice(offer)} /></p>
                     </div>
-                    <Link href={`/api/track-click?offer=${offer.id}`} className="rounded-full bg-white px-4 py-3 text-sm font-bold text-ink"><ExternalLink size={16} /></Link>
+                    <Link href={`/api/track-click?offer=${offer.id}`} className="flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-bold text-ink transition hover:bg-volt">
+                      <ShoppingBag size={16} /> View deal <ExternalLink size={14} />
+                    </Link>
                   </div>
                 </div>
               );
             })}
           </div>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button className="rounded-full border border-white/10 px-5 py-3 font-semibold"><Heart className="mr-2 inline" size={16} /> Favorite</button>
-            <button className="rounded-full bg-volt px-5 py-3 font-bold text-ink"><Bell className="mr-2 inline" size={16} /> Create price alert</button>
-          </div>
+          <ProductActions productId={product.id} productTitle={product.title} />
         </div>
       </section>
       <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-14 sm:px-6 lg:grid-cols-[1fr_.8fr]">
@@ -116,4 +131,8 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
 function Detail({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4"><div className="mb-4 text-volt">{icon}</div><p className="text-xs text-steel">{label}</p><p className="font-bold">{value}</p></div>;
+}
+
+function IntelPill({ label, value }: { label: string; value: string }) {
+  return <div className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3"><p className="text-[10px] uppercase tracking-[0.18em] text-steel">{label}</p><p className="mt-1 font-bold text-champagne">{value}</p></div>;
 }

@@ -1,4 +1,4 @@
-# Deployment and Environment
+# FootballKitRadar Deployment and Environment
 
 ## Required Environment Variables
 
@@ -7,7 +7,7 @@
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only inserts for click tracking and admin routes |
-| `NEXT_PUBLIC_SITE_URL` | Canonical URL for sitemap and robots |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URL for sitemap, robots, OpenGraph and structured data |
 | `ALIEXPRESS_APP_KEY`, `ALIEXPRESS_APP_SECRET` | AliExpress affiliate integration |
 | `DHGATE_APP_KEY`, `DHGATE_APP_SECRET` | DHGate affiliate integration |
 | `AMAZON_ASSOCIATE_TAG` | Optional Amazon affiliate tag |
@@ -16,7 +16,7 @@
 ## Vercel
 
 1. Import the GitHub repository into Vercel.
-2. Set the root directory to `KitRadar` if this lives inside a larger repo.
+2. Use the standalone `footballkitrader` repository.
 3. Add all environment variables in Production, Preview and Development.
 4. Deploy. The included `vercel.json` uses the Next.js framework preset.
 
@@ -33,6 +33,16 @@ Add a Vercel Cron endpoint later for marketplace refreshes:
 - Match duplicate shirts by title, tags and image embeddings.
 - Store offer snapshots in `price_history`.
 - Trigger alerts and Expo push notifications.
+
+## Monitoring
+
+Enable Vercel Web Analytics and Speed Insights before production traffic. Track:
+
+- Core Web Vitals
+- API error rates
+- affiliate redirect latency
+- search latency
+- conversion event ingestion
 
 ## Internationalization
 

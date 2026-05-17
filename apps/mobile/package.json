@@ -1,0 +1,22 @@
+{
+  "name": "@football-kit-radar/mobile",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "expo": "^55.0.24",
+    "expo-notifications": "^55.0.23",
+    "nativewind": "^4.2.1",
+    "react": "19.2.6",
+    "react-native": "^0.85.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@types/react": "^19.2.7",
+    "typescript": "^5.9.3"
+  }
+}

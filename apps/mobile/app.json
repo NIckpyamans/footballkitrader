@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "KitRadar",
-    "slug": "kitradar",
-    "scheme": "kitradar",
+    "name": "FootballKitRadar",
+    "slug": "football-kit-radar",
+    "scheme": "footballkitradar",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",

@@ -1,5 +1,5 @@
 {
-  "name": "footballkitrader",
+  "name": "football-kit-radar",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -8,30 +8,25 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit --project tsconfig.typecheck.json",
-    "mobile": "expo start"
+    "mobile": "npm --prefix apps/mobile run start"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
-    "expo": "^51.0.31",
-    "expo-notifications": "^0.28.19",
     "framer-motion": "^11.5.4",
     "lucide-react": "^0.468.0",
-    "next": "^14.2.15",
-    "nativewind": "^4.1.23",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-native": "^0.74.5",
-    "react-native-web": "^0.19.12",
+    "next": "^16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
     "tailwindcss": "^3.4.13",
-    "typescript": "^5.6.3"
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@types/node": "^22.7.4",
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.20",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.15",
+    "eslint": "^10.3.0",
+    "eslint-config-next": "^16.2.6",
     "postcss": "^8.4.47"
   }
 }

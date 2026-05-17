@@ -2,25 +2,30 @@ import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { Shell } from "@/components/Shell";
 import { products, seoPages } from "@/data/mock";
+import { primaryProductImage } from "@/lib/images";
 
 export function generateStaticParams() {
   return seoPages.map((page) => ({ slug: page.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const page = seoPages.find((item) => item.slug === params.slug);
+type SeoPageProps = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: SeoPageProps) {
+  const { slug } = await params;
+  const page = seoPages.find((item) => item.slug === slug);
   return { title: page?.title, description: page?.description };
 }
 
-export default async function SeoPage({ params }: { params: { slug: string } }) {
-  const page = seoPages.find((item) => item.slug === params.slug);
+export default async function SeoPage({ params }: SeoPageProps) {
+  const { slug } = await params;
+  const page = seoPages.find((item) => item.slug === slug);
   if (!page) notFound();
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: page.title,
     description: page.description,
-    mainEntity: products.map((product) => ({ "@type": "Product", name: product.title, image: product.images[0], brand: product.club }))
+    mainEntity: products.map((product) => ({ "@type": "Product", name: product.title, image: primaryProductImage(product.images, product.slug), brand: product.club }))
   };
 
   return (

@@ -1,16 +1,19 @@
 import type { Product } from "@/types";
+import { Price } from "@/components/Price";
 
 export function PriceHistoryChart({ product }: { product: Product }) {
   const values = product.priceHistory.map((item) => item.price);
   const max = Math.max(...values);
   const min = Math.min(...values);
+  const latest = product.priceHistory.at(-1)?.price ?? min;
 
   return (
     <div className="glass rounded-[28px] p-5">
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.2em] text-mint">price history</p>
+          <p className="text-sm uppercase tracking-[0.2em] text-mint">Price history</p>
           <h2 className="text-2xl font-bold">Lowest trend</h2>
+          <p className="mt-1 text-sm text-steel">Lowest <Price amount={min} /> - latest <Price amount={latest} /></p>
         </div>
         <p className="rounded-full bg-volt/10 px-3 py-1 text-sm font-semibold text-volt">-{Math.round(((max - min) / max) * 100)}%</p>
       </div>

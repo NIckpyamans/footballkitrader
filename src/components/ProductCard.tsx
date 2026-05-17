@@ -1,9 +1,9 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowUpRight, Camera, Clock, Crown, ShieldCheck, Sparkles } from "lucide-react";
 import type { Product } from "@/types";
 import { sellers } from "@/data/mock";
 import { bestOffer, bestValueScore, totalPrice } from "@/lib/scoring";
+import { primaryProductImage } from "@/lib/images";
 import { Price } from "@/components/Price";
 import { T } from "@/components/T";
 
@@ -15,7 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <article className="glass group overflow-hidden rounded-[28px] transition duration-300 hover:-translate-y-1 hover:border-volt/40">
       <div className="relative aspect-[4/3] overflow-hidden">
-        <Image src={product.images[0] || product.image} alt={product.title} fill className="object-cover transition duration-500 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 33vw" />
+        <Image src={primaryProductImage(product.images, product.slug)} alt={product.title} fill className="object-cover transition duration-500 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 33vw" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent" />
         <div className="absolute left-4 top-4 flex gap-2">
           <span className="rounded-full bg-ink/70 px-3 py-1 text-xs font-medium backdrop-blur">{product.version}</span>
@@ -27,7 +27,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
         <div className="absolute bottom-4 left-4 right-4">
           <h3 className="text-xl font-semibold tracking-tight">{product.title}</h3>
-          <p className="text-sm text-steel">{product.club} · {product.season}</p>
+          <p className="text-sm text-steel">{product.club} - {product.season}</p>
         </div>
       </div>
       <div className="space-y-5 p-5">
@@ -47,9 +47,9 @@ export function ProductCard({ product }: { product: Product }) {
             <p className="text-xs text-steel">{offer.marketplace}</p>
           </div>
         </div>
-        <Link href={`/products/${product.slug}`} className="flex items-center justify-center gap-2 rounded-full bg-champagne px-4 py-3 text-sm font-semibold text-ink transition hover:bg-volt">
+        <a href={`/products/${product.slug}`} className="flex items-center justify-center gap-2 rounded-full bg-champagne px-4 py-3 text-sm font-semibold text-ink transition hover:bg-volt">
           <T k="compareOffers" /> <ArrowUpRight size={16} />
-        </Link>
+        </a>
       </div>
     </article>
   );

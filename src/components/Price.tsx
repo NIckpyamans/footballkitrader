@@ -8,11 +8,11 @@ export function Price({ amount, className = "" }: { amount: number; className?: 
   const [currency, setCurrency] = useState<CurrencyCode>("EUR");
 
   useEffect(() => {
-    const stored = localStorage.getItem("kitradar_currency") as CurrencyCode | null;
+    const stored = localStorage.getItem("footballkitradar_currency") as CurrencyCode | null;
     if (stored) setCurrency(stored);
     const handler = (event: Event) => setCurrency((event as CustomEvent<CurrencyCode>).detail);
-    window.addEventListener("kitradar-currency", handler);
-    return () => window.removeEventListener("kitradar-currency", handler);
+    window.addEventListener("footballkitradar-currency", handler);
+    return () => window.removeEventListener("footballkitradar-currency", handler);
   }, []);
 
   const converted = amount * currencyRates[currency];

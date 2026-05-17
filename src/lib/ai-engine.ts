@@ -24,16 +24,61 @@ export function calculateSmartDealScore(product: Product, offer: ProductOffer, s
   return Math.round(quality * 0.38 + (seller ? calculateSellerTrust(seller) : product.aiTrustScore) * 0.24 + delivery * 0.18 + price * 0.2);
 }
 
+export function analyzePriceHistory(product: Product) {
+  const values = product.priceHistory.map((item) => item.price);
+  const latest = values.at(-1) ?? 0;
+  const highest = Math.max(...values, latest);
+  const lowest = Math.min(...values, latest);
+  const dropPercent = highest > 0 ? Math.round(((highest - latest) / highest) * 100) : 0;
+  const volatility = highest - lowest;
+
+  return {
+    latest,
+    highest,
+    lowest,
+    dropPercent,
+    volatility,
+    trend: dropPercent >= 20 ? "strong_drop" : volatility >= 10 ? "volatile" : "stable"
+  };
+}
+
+export function analyzeImageSignals(product: Product) {
+  const colorCoverage = product.colors.length >= 2 ? 88 : 64;
+  const galleryCoverage = Math.min(100, product.images.length * 28);
+  const ocrConfidence = product.tags.some((tag) => ["wk26", "world cup 2026", "retro"].includes(tag)) ? 84 : 72;
+  const logoConfidence = product.club.length > 0 ? 86 : 58;
+
+  return {
+    imageSimilarity: Math.round(galleryCoverage * 0.48 + colorCoverage * 0.24 + logoConfidence * 0.18 + ocrConfidence * 0.1),
+    ocrConfidence,
+    logoConfidence,
+    colorCoverage
+  };
+}
+
+export function detectSellerWarnings(seller?: Seller, marketplaceRisk = 0) {
+  if (!seller) return ["Seller data incomplete; keep offer below preferred ranking until verified."];
+  const warnings: string[] = [];
+  if (seller.trustScore < 70) warnings.push("Low AI seller trust score.");
+  if (seller.refundRate > 3) warnings.push("Refund rate is above marketplace benchmark.");
+  if (seller.avgDeliveryDays > 12) warnings.push("Delivery reliability may be weak for tournament demand spikes.");
+  if (marketplaceRisk > 60) warnings.push("Marketplace source requires manual review before live activation.");
+  return warnings;
+}
+
 export function matchProducts(seed: Product, candidates: Product[]) {
+  const seedImage = analyzeImageSignals(seed);
   return candidates
     .filter((product) => product.id !== seed.id)
     .map((product) => {
+      const imageSignals = analyzeImageSignals(product);
       const sharedTags = product.tags.filter((tag) => seed.tags.includes(tag)).length;
       const sameTeam = product.club === seed.club ? 30 : 0;
       const sameVersion = product.version === seed.version ? 16 : 0;
       const colorOverlap = product.colors.filter((color) => seed.colors.includes(color)).length * 8;
-      const confidence = Math.min(98, sharedTags * 9 + sameTeam + sameVersion + colorOverlap + 18);
-      return { product, confidence, method: "title_tags_color_image_similarity" };
+      const imageOverlap = Math.round((seedImage.imageSimilarity + imageSignals.imageSimilarity) / 16);
+      const confidence = Math.min(98, sharedTags * 9 + sameTeam + sameVersion + colorOverlap + imageOverlap + 10);
+      return { product, confidence, method: "title_tags_color_image_ocr_logo_similarity" };
     })
     .filter((match) => match.confidence >= 42)
     .sort((a, b) => b.confidence - a.confidence);

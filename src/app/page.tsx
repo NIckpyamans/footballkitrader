@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BadgeEuro, Flame, Gauge, Globe2, ShieldCheck, Sparkles, Timer, Trophy, Truck } from "lucide-react";
+import { ArrowRight, BadgeEuro, Flame, Gauge, Globe2, ShieldCheck, Sparkles, Trophy, Truck } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { SearchPanel } from "@/components/SearchPanel";
 import { ProductCard } from "@/components/ProductCard";
@@ -7,6 +7,8 @@ import { Price } from "@/components/Price";
 import { T } from "@/components/T";
 import { MarketplaceLogos } from "@/components/MarketplaceLogos";
 import { WkCountdown } from "@/components/WkCountdown";
+import { siteConfig, platformModes } from "@/config/site";
+import { homeSections } from "@/data/home";
 import { categories, popularClubs, popularNationalTeams, popularPlayers, products, sellers } from "@/data/mock";
 import { bestOffer, totalPrice } from "@/lib/scoring";
 
@@ -14,18 +16,23 @@ export default function HomePage() {
   const wkProducts = products.filter((product) => product.tags.includes("wk26"));
   const bestToday = wkProducts[0] ?? products[0];
   const bestTodayOffer = bestOffer(bestToday, sellers);
-  const trending = [...wkProducts, ...products].slice(0, 3);
-  const retro = products.filter((product) => product.tags.includes("retro") || product.tags.includes("world cup 2026")).slice(0, 3);
-  const aiRecommended = [...products].sort((a, b) => b.aiDealScore - a.aiDealScore).slice(0, 3);
 
   return (
     <Shell>
       <section className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.05fr_.95fr] lg:py-16">
         <div className="flex flex-col justify-center">
           <p className="mb-5 w-fit rounded-full border border-gold/40 bg-gold/10 px-4 py-2 text-sm font-medium text-champagne">WK26 live marketplace radar</p>
-          <h1 className="gold-text max-w-4xl text-5xl font-black tracking-tight sm:text-7xl">WK26 shirts, national team kits and football deals in one premium radar.</h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-steel"><T k="heroCopy" /> Built for World Cup 2026 traffic, affiliate tracking and AI-powered product matching.</p>
+          <h1 className="gold-text max-w-4xl text-5xl font-black tracking-tight sm:text-7xl">{siteConfig.name} turns football commerce into AI market intelligence.</h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-steel"><T k="heroCopy" /> Built for World Cup 2026 traffic, club-season demand, affiliate tracking and AI-powered product matching.</p>
           <div className="mt-8"><SearchPanel /></div>
+          <div className="mt-6 grid gap-2 sm:grid-cols-2">
+            {platformModes.map((mode) => (
+              <Link href={`/search?q=${encodeURIComponent(mode.query)}`} key={mode.id} className="rounded-3xl border border-white/10 bg-white/[0.04] p-4 transition hover:border-gold/40 hover:bg-gold/10">
+                <p className="text-sm font-bold text-champagne">{mode.label}</p>
+                <p className="mt-1 text-xs leading-5 text-steel">{mode.headline}</p>
+              </Link>
+            ))}
+          </div>
           <div className="mt-6 flex flex-wrap gap-2">
             {["WK26 shirts", "National teams", "Retro WK", "Player version", "Fan version", "Cheap deals"].map((market) => <Link href={`/search?q=${encodeURIComponent(market)}`} key={market} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-steel transition hover:border-gold/40 hover:text-white">{market}</Link>)}
           </div>
@@ -58,9 +65,9 @@ export default function HomePage() {
       </section>
 
       <MarketplaceLogos />
-      <HomeStrip title="Trending national team shirts" icon={<Flame />} products={trending} />
-      <HomeStrip title="Retro WK shirts" icon={<Globe2 />} products={retro} />
-      <HomeStrip title="AI recommended WK deals" icon={<ShieldCheck />} products={aiRecommended} />
+      {homeSections.map((section, index) => (
+        <HomeStrip key={section.id} eyebrow={section.eyebrow} title={section.title} icon={index % 3 === 0 ? <Flame /> : index % 3 === 1 ? <ShieldCheck /> : <Globe2 />} products={section.products} query={section.query} />
+      ))}
 
       <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-16 sm:px-6 lg:grid-cols-4">
         <TagPanel title="Categories" items={categories} />
@@ -72,15 +79,16 @@ export default function HomePage() {
   );
 }
 
-function HomeStrip({ title, icon, products: items }: { title: string; icon: React.ReactNode; products: typeof products }) {
+function HomeStrip({ eyebrow, title, icon, products: items, query }: { eyebrow: string; title: string; icon: React.ReactNode; products: typeof products; query: string }) {
+  if (items.length === 0) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6">
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <p className="flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-gold">{icon} WK26 radar</p>
+          <p className="flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-gold">{icon} {eyebrow}</p>
           <h2 className="mt-2 text-3xl font-bold">{title}</h2>
         </div>
-        <Link href="/search?q=wk26" className="hidden text-sm text-steel hover:text-white sm:block">View all</Link>
+        <Link href={`/search?q=${encodeURIComponent(query)}`} className="hidden text-sm text-steel hover:text-white sm:block">View all</Link>
       </div>
       <div className="grid gap-5 md:grid-cols-3">{items.map((product) => <ProductCard key={product.id} product={product} />)}</div>
     </section>

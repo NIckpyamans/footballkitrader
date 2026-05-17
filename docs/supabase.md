@@ -6,7 +6,8 @@ Core tables:
 
 - `products`, `offers`, `sellers`, `marketplaces`
 - `affiliate_clicks`, `price_history`, `product_matches`
-- `marketplace_discovery_runs`, `ai_seller_signals`
+- `marketplace_discovery_runs`, `marketplace_trust_history`, `ai_seller_signals`, `ai_scoring_events`
+- `club_data`, `seasonal_products`, `seo_content_pages`
 - `favorites`, `alerts`, `users`
 
 Security model:

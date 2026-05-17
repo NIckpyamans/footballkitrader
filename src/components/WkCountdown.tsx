@@ -5,14 +5,15 @@ import { useEffect, useState } from "react";
 const target = new Date("2026-06-11T00:00:00-04:00").getTime();
 
 export function WkCountdown() {
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    setNow(Date.now());
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
 
-  const distance = Math.max(target - now, 0);
+  const distance = now === null ? 0 : Math.max(target - now, 0);
   const days = Math.floor(distance / 86400000);
   const hours = Math.floor((distance % 86400000) / 3600000);
   const minutes = Math.floor((distance % 3600000) / 60000);

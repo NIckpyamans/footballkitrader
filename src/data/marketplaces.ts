@@ -112,6 +112,20 @@ export const marketplaceSources: MarketplaceSource[] = [
     scamRisk: 52,
     activationRequiresApproval: true,
     signals: ["external webshop", "compare-only candidate", "requires return policy and seller proof checks"]
+  },
+  {
+    id: "worldcupzone",
+    name: "WorldCupZone",
+    url: "https://worldcupzone.shop",
+    category: "webshop",
+    status: "pending_review",
+    aiTrustScore: 56,
+    qualityScore: 59,
+    shippingScore: 50,
+    communityScore: 42,
+    scamRisk: 58,
+    activationRequiresApproval: true,
+    signals: ["WK26-focused source candidate", "requires policy and fulfilment validation", "analysis-only image and price comparison"]
   }
 ];
 
@@ -133,5 +147,11 @@ export const discoveryInsights: DiscoveryInsight[] = [
     title: "Low-price discovery candidate",
     severity: "low",
     recommendation: "Enable through approved partner feeds or documented API terms before showing outbound affiliate redirects."
+  },
+  {
+    sourceId: "worldcupzone",
+    title: "WK26 source needs manual approval",
+    severity: "medium",
+    recommendation: "Keep analysis-only until ownership, return policy, image rights and fulfilment reliability are verified."
   }
 ];

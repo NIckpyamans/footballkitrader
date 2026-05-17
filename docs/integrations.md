@@ -41,14 +41,14 @@ Recommended future jobs:
 
 ## Discovery Engine Approval Policy
 
-KitRadar can analyze public marketplace candidates for title patterns, price ranges, image similarity, seller signals and scam-risk markers. New sources stay disabled until manually approved:
+FootballKitRadar can analyze public marketplace candidates for title patterns, price ranges, image similarity, seller signals and scam-risk markers. New sources stay disabled until manually approved:
 
 1. Analyze source metadata.
 2. Generate AI trust, quality, shipping, community and scam-risk scores.
 3. Store findings in `marketplace_discovery_runs`.
 4. Require explicit approval before adding active scraping, outbound links or affiliate redirects.
 
-Current configured candidates include `ucljersey.com`, `2027jersey.com`, `vip-kiki004-shop.top` and `namejersey.com` for analysis only.
+Current configured candidates include `ucljersey.com`, `2027jersey.com`, `vip-kiki004-shop.top`, `namejersey.com` and `worldcupzone.shop` for analysis only.
 
 ## Security
 

@@ -7,8 +7,23 @@ import { searchMarketplaceOffers } from "@/lib/affiliate";
 
 export const metadata: Metadata = { title: "Search Football Shirts" };
 
-export default async function SearchPage({ searchParams }: { searchParams: Record<string, string | undefined> }) {
-  const params = searchParams;
+type SearchPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+function single(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function SearchPage({ searchParams }: SearchPageProps) {
+  const rawParams = await searchParams;
+  const params = {
+    q: single(rawParams.q),
+    version: single(rawParams.version),
+    marketplace: single(rawParams.marketplace),
+    size: single(rawParams.size),
+    color: single(rawParams.color),
+    season: single(rawParams.season),
+    maxPrice: single(rawParams.maxPrice)
+  };
   const results = await searchMarketplaceOffers({ q: params.q, version: params.version, marketplace: params.marketplace, size: params.size, color: params.color, season: params.season, maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined });
 
   return (
@@ -25,14 +40,32 @@ export default async function SearchPage({ searchParams }: { searchParams: Recor
             <AiSignal title="Risk checks" value="fake reviews, seller drift" />
           </div>
         </div>
-        <div className="mt-6"><SearchPanel compact /></div>
-        <form className="glass mt-5 grid gap-3 rounded-[28px] p-4 sm:grid-cols-4 lg:grid-cols-8">
-          <input name="q" defaultValue={params.q} className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm outline-none sm:col-span-2" placeholder="AI search suggestions" />
-          <input name="maxPrice" defaultValue={params.maxPrice} className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm outline-none" placeholder="Max price" />
-          <input name="season" defaultValue={params.season} className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm outline-none" placeholder="Season" />
-          <select name="marketplace" defaultValue={params.marketplace ?? ""} className="rounded-2xl border border-white/10 bg-graphite px-3 py-3 text-sm outline-none"><option value="">Marketplace</option><option>AliExpress</option><option>DHGate</option><option>Temu</option><option>Amazon</option><option>Instagram Seller</option></select>
-          <select name="size" defaultValue={params.size ?? ""} className="rounded-2xl border border-white/10 bg-graphite px-3 py-3 text-sm outline-none"><option value="">Size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option></select>
-          <input name="color" defaultValue={params.color} className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm outline-none" placeholder="Color" />
+        <div className="mt-6"><SearchPanel compact defaultQuery={params.q ?? ""} /></div>
+        <form action="/search" className="glass mt-5 grid gap-3 rounded-[28px] p-4 sm:grid-cols-4 lg:grid-cols-8">
+          <label className="sm:col-span-2">
+            <span className="sr-only">Search shirts</span>
+            <input name="q" defaultValue={params.q} className="w-full rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm outline-none" placeholder="AI search suggestions" />
+          </label>
+          <label>
+            <span className="sr-only">Max price</span>
+            <input name="maxPrice" defaultValue={params.maxPrice} className="w-full rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm outline-none" placeholder="Max price" />
+          </label>
+          <label>
+            <span className="sr-only">Season</span>
+            <input name="season" defaultValue={params.season} className="w-full rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm outline-none" placeholder="Season" />
+          </label>
+          <label>
+            <span className="sr-only">Marketplace</span>
+            <select name="marketplace" defaultValue={params.marketplace ?? ""} className="w-full rounded-2xl border border-white/10 bg-graphite px-3 py-3 text-sm outline-none"><option value="">Marketplace</option><option>AliExpress</option><option>DHGate</option><option>Temu</option><option>Amazon</option><option>Instagram Seller</option></select>
+          </label>
+          <label>
+            <span className="sr-only">Size</span>
+            <select name="size" defaultValue={params.size ?? ""} className="w-full rounded-2xl border border-white/10 bg-graphite px-3 py-3 text-sm outline-none"><option value="">Size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option></select>
+          </label>
+          <label>
+            <span className="sr-only">Color</span>
+            <input name="color" defaultValue={params.color} className="w-full rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm outline-none" placeholder="Color" />
+          </label>
           <button className="flex items-center justify-center gap-2 rounded-2xl bg-volt px-4 py-3 text-sm font-bold text-ink"><SlidersHorizontal size={16} /> Filter</button>
         </form>
         <div className="mt-5 flex flex-wrap gap-2">
@@ -41,6 +74,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Recor
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {results.map((product) => <ProductCard key={product.id} product={product} />)}
         </div>
+        {results.length === 0 ? (
+          <div className="glass mt-8 rounded-[28px] p-8 text-center">
+            <h2 className="text-2xl font-bold">No matching shirts found</h2>
+            <p className="mt-2 text-steel">Try a broader club, country, season or marketplace filter.</p>
+          </div>
+        ) : null}
       </section>
     </Shell>
   );

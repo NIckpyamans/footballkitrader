@@ -1,6 +1,6 @@
-# Footballkitrader
+# FootballKitRadar
 
-Premium WK26 football shirt and international merchandise marketplace, built from the KitRadar codebase, for AliExpress, DHGate, Temu, Amazon, football webshops, retro marketplaces and public social sellers.
+Premium WK26 football shirt and international AI commerce marketplace for AliExpress, DHGate, Temu, Amazon, football webshops, retro marketplaces and public social sellers.
 
 ## Stack
 
@@ -16,6 +16,8 @@ Premium WK26 football shirt and international merchandise marketplace, built fro
 
 ## Quick Start
 
+Web app:
+
 ```bash
 npm install
 cp .env.example .env.local
@@ -23,6 +25,16 @@ npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+Mobile shell:
+
+```bash
+cd apps/mobile
+npm install
+npm run start
+```
+
+The root package is intentionally web-only for Vercel. Expo, React Native and NativeWind live under `apps/mobile` so web deployment stays small and auditable.
 
 ## Supabase Setup
 
@@ -50,4 +62,4 @@ The project is GitHub/Vercel/Supabase ready, but production actions are intentio
 
 ## Production Notes
 
-Marketplace APIs are wrapped behind `src/lib/affiliate.ts`. The current build ships with safe mock providers so the UI and tracking flows work immediately. Replace the mock fetchers with official AliExpress, DHGate, Temu or Amazon endpoints as credentials are approved.
+Marketplace APIs are wrapped behind `src/lib/affiliate.ts` and AI risk scoring lives in `src/lib/ai-engine.ts`. The current build ships with safe mock providers so the UI and tracking flows work immediately. Replace the mock fetchers with official AliExpress, DHGate, Temu or Amazon endpoints as credentials are approved.

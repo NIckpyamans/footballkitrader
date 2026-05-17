@@ -1,4 +1,4 @@
-import { Bot, CreditCard, ShieldAlert, Store, Users } from "lucide-react";
+import { BarChart3, Bot, CreditCard, LineChart, SearchCheck, ShieldAlert, Store, Users } from "lucide-react";
 import { DiscoveryPanel } from "@/components/DiscoveryPanel";
 import { Shell } from "@/components/Shell";
 
@@ -15,6 +15,12 @@ export default function AdminPage() {
           <AdminCard icon={<Bot />} title="AI moderation" value="17 queued" />
           <AdminCard icon={<CreditCard />} title="Revenue" value="EUR 9.3k MTD" />
           <AdminCard icon={<Users />} title="Users" value="12.4k" />
+        </div>
+        <div className="mt-6 grid gap-5 md:grid-cols-4">
+          <AdminCard icon={<SearchCheck />} title="SEO pages" value="10 indexed-ready" />
+          <AdminCard icon={<LineChart />} title="Trend velocity" value="+38% WK26" />
+          <AdminCard icon={<BarChart3 />} title="Products" value="6 enriched" />
+          <AdminCard icon={<ShieldAlert />} title="Risk sources" value="2 high-risk" />
         </div>
         <div className="mt-6 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
           <div className="glass rounded-[28px] p-6">
@@ -36,6 +42,11 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+        <div className="mt-6 grid gap-5 lg:grid-cols-3">
+          <OpsPanel title="Product management" items={["Image completeness: 100%", "Missing thumbnails: 0", "Unmatched listings: 4", "Manual moderation: 21"]} />
+          <OpsPanel title="SEO monitoring" items={["Canonical URLs: configured", "Sitemap routes: 36", "Structured data: products + collections", "Noindex admin: enabled"]} />
+          <OpsPanel title="User analytics" items={["Watchlists: 3.8k", "Price alerts: 1.2k", "Top locale: NL", "Top currency: EUR"]} />
+        </div>
         <div className="mt-6"><DiscoveryPanel compact /></div>
       </section>
     </Shell>
@@ -48,4 +59,8 @@ function AdminCard({ icon, title, value }: { icon: React.ReactNode; title: strin
 
 function Metric({ label, value }: { label: string; value: string }) {
   return <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><p className="text-sm text-steel">{label}</p><p className="text-2xl font-bold">{value}</p></div>;
+}
+
+function OpsPanel({ title, items }: { title: string; items: string[] }) {
+  return <div className="glass rounded-[28px] p-6"><h2 className="text-xl font-bold">{title}</h2><div className="mt-5 space-y-3">{items.map((item) => <p key={item} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-steel">{item}</p>)}</div></div>;
 }
