@@ -39,7 +39,7 @@ export function buildAffiliateUrl(rawUrl: string, clickId: string) {
 }
 
 export function isAllowedAffiliateDestination(rawUrl: string) {
-  const allowedHosts = ["example.com", "www.aliexpress.com", "www.dhgate.com", "www.amazon.com", "www.amazon.nl"];
+  const allowedHosts = ["www.aliexpress.com", "www.dhgate.com", "www.amazon.com", "www.amazon.nl", "www.temu.com"];
   try {
     const url = new URL(rawUrl);
     return allowedHosts.includes(url.hostname);

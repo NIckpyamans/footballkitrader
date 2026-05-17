@@ -8,7 +8,7 @@ const nav = [
   ["navDeals", "/deals"],
   ["navTrending", "/trending"],
   ["navSellers", "/sellers"],
-  ["Discovery", "/discovery"],
+  ["Marketplaces", "/discovery"],
   ["navAlerts", "/alerts"]
 ] as const;
 
@@ -27,7 +27,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <nav className="hidden items-center gap-1 md:flex">
             {nav.map(([label, href]) => (
               <Link key={href} href={href} className="rounded-full px-4 py-2 text-sm text-steel transition hover:bg-white/10 hover:text-white">
-                {label === "Discovery" ? label : <T k={label} />}
+                {label === "Marketplaces" ? label : <T k={label} />}
               </Link>
             ))}
           </nav>
@@ -43,7 +43,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       {children}
       <footer className="border-t border-white/10 px-4 py-10 text-sm text-steel">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2"><ShieldCheck size={18} className="text-mint" /> {siteConfig.name} combines seller trust, affiliate transparency and AI moderation.</div>
+          <div className="flex items-center gap-2"><ShieldCheck size={18} className="text-mint" /> {siteConfig.name} combines seller trust, affiliate transparency and AI moderation. We may earn commission from outbound links.</div>
           <div className="flex items-center gap-2"><Bell size={18} className="text-volt" /> Alerts, favorites and SEO pages ready for launch.</div>
         </div>
       </footer>
